@@ -74,6 +74,56 @@ async def analyze():
         await workflow.close()
 ```
 
+## ☁️ GitHub Codespaces
+
+The easiest way to get started is using GitHub Codespaces, which provides a pre-configured development environment.
+
+### 🚀 Launch in Codespace
+
+1. **Create a Codespace**: Click the "Code" button on the GitHub repository and select "Create codespace on main"
+
+2. **Set up environment variables**: The Codespace will automatically install dependencies. You need to configure your API keys:
+   ```bash
+   # Copy the example environment file
+   cp .devcontainer/example.env .env
+   
+   # Edit .env with your actual API keys
+   # You can use VS Code or nano to edit the file
+   code .env
+   ```
+
+3. **Add your Anthropic API key**: In the `.env` file, replace `your_anthropic_api_key_here` with your actual Anthropic API key
+   - Get your API key from: https://console.anthropic.com/
+   - The key should start with `sk-ant-api03-`
+
+4. **Run the application**:
+   ```bash
+   poetry run crude-or-rude
+   ```
+
+### 🔐 Secure Environment Variables
+
+For sensitive data like API keys, you have two secure options:
+
+**Option 1: Codespace Secrets (Recommended)**
+1. Go to your GitHub Settings → Codespaces → Repository secrets
+2. Add `ANTHROPIC_API_KEY` as a secret
+3. The secret will be automatically available as an environment variable
+
+**Option 2: Local .env file**
+1. Create a `.env` file as shown above
+2. Add your secrets to the file
+3. The `.env` file is already gitignored and won't be committed
+
+### 📋 Required Environment Variables
+
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `ANTHROPIC_API_KEY` | ✅ Yes | Your Anthropic API key for Claude integration | None |
+| `FASTMCP_URL` | ❌ Optional | FastMCP service URL for sentiment analysis | `http://localhost:8000` |
+
+Note: The application includes fallback mechanisms and will work with mock data if external services are unavailable.
+
 ## 📊 Example Output
 
 ```

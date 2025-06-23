@@ -157,7 +157,7 @@ Your AWS credentials need the following permissions for Amazon Bedrock:
 
 ### 🌍 Supported AWS Regions
 
-Claude 3.5 Sonnet is available in these AWS regions:
+Claude 3.7 Sonnet is available in these AWS regions:
 - `us-east-1` (Virginia) 
 - `us-west-2` (Oregon)
 - `eu-central-1` (Frankfurt)
@@ -209,7 +209,7 @@ This application uses **AWS Bedrock** instead of direct API calls for several ad
 - Better integration with other AWS services
 
 ### 🤖 **Latest Models**
-- **Claude 3.5 Sonnet**: More capable than previous versions
+- **Claude 3.7 Sonnet**: More capable than previous versions
 - Higher context window (200K tokens)
 - Better reasoning and analysis capabilities
 - Faster response times

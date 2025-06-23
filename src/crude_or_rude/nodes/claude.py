@@ -1,11 +1,11 @@
 """
-Claude node for composite sentiment decision making.
+Claude node for composite sentiment decision making via AWS Bedrock.
 """
 
 import os
 from typing import Any, Dict
 
-from langchain_anthropic import ChatAnthropic
+from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import PydanticOutputParser
 
@@ -13,21 +13,26 @@ from crude_or_rude.models import MarketSentiment, WorkflowState
 
 
 class ClaudeDecisionNode:
-    """Claude-powered node for making composite sentiment decisions."""
+    """Claude-powered node for making composite sentiment decisions via AWS Bedrock."""
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, region_name: str = None):
         """
-        Initialize Claude client.
+        Initialize Claude client via AWS Bedrock using existing AWS CLI configuration.
 
         Args:
-            api_key: Anthropic API key, defaults to environment variable
+            region_name: AWS region name, defaults to environment variable or CLI default
         """
-        api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable not set")
-
-        self.llm = ChatAnthropic(
-            model="claude-3-haiku-20240307", anthropic_api_key=api_key, temperature=0.7
+        # Use the region from environment or AWS CLI default
+        region = region_name or os.getenv("AWS_DEFAULT_REGION")
+        
+        # ChatBedrock will automatically use your AWS CLI configuration
+        self.llm = ChatBedrock(
+            model_id="us.anthropic.claude-3-7-sonnet-20250219-v1:0",  # Claude 3.7 Sonnet cross-region inference profile
+            region_name=region,  # Will use CLI default if None
+            model_kwargs={
+                "temperature": 0.7,
+                "max_tokens": 4000,
+            }
         )
         self.parser = PydanticOutputParser(pydantic_object=MarketSentiment)
 

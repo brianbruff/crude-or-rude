@@ -19,19 +19,19 @@ from crude_or_rude.services import FastMCPClient
 class CrudeOrRudeWorkflow:
     """Main workflow orchestrator using LangGraph."""
 
-    def __init__(self, fastmcp_url: str = None, anthropic_api_key: str = None):
+    def __init__(self, fastmcp_url: str = None, aws_region: str = None):
         """
         Initialize the workflow.
 
         Args:
             fastmcp_url: URL for FastMCP service
-            anthropic_api_key: Anthropic API key for Claude
+            aws_region: AWS region for Bedrock service (optional, uses CLI default)
         """
         self.fastmcp_url = fastmcp_url or os.getenv(
             "FASTMCP_URL", "http://localhost:8000"
         )
         self.fastmcp_client = FastMCPClient(self.fastmcp_url)
-        self.claude_node = ClaudeDecisionNode(anthropic_api_key)
+        self.claude_node = ClaudeDecisionNode(aws_region)
         self.workflow = self._build_workflow()
 
     def _build_workflow(self) -> StateGraph:

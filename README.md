@@ -21,7 +21,7 @@ The application uses a LangGraph workflow that orchestrates multiple analysis no
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Prerequisites 
 
 - Python 3.11+
 - Poetry (for dependency management)
@@ -241,8 +241,8 @@ poetry run flake8 src/ tests/
 
 The application can be configured via environment variables or AWS CLI:
 
-### Claude 3.5 Sonnet via AWS Bedrock
-- **Model**: `anthropic.claude-3-5-sonnet-20241022-v2:0`
+### Claude 3.7 Sonnet via AWS Bedrock
+- **Model**: `us.anthropic.claude-3-7-sonnet-20250219-v1:0`
 - **Temperature**: 0.7
 - **Max Tokens**: 4000
 - **Authentication**: Uses your AWS CLI configuration automatically

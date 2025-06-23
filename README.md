@@ -17,7 +17,7 @@ The application uses a LangGraph workflow that orchestrates multiple analysis no
 
 1. **Sentiment Analysis Node** - Uses FastMCP for sentiment scoring
 2. **Rudeness Detector Node** - Mock NLP node for tone analysis
-3. **Claude Decision Node** - AWS Bedrock-powered composite sentiment classification using Claude 3.5 Sonnet
+3. **Claude Decision Node** - AWS Bedrock-powered composite sentiment classification using Claude 3.7 Sonnet
 
 ## 🚀 Quick Start
 
@@ -25,7 +25,7 @@ The application uses a LangGraph workflow that orchestrates multiple analysis no
 
 - Python 3.11+
 - Poetry (for dependency management)
-- AWS CLI configured with Bedrock access (for Claude 3.5 Sonnet integration)
+- AWS CLI configured with Bedrock access (for Claude 3.7 Sonnet integration)
 - Optional: FastMCP service running (falls back to mock analysis)
 
 ### Installation
@@ -148,7 +148,7 @@ Your AWS credentials need the following permissions for Amazon Bedrock:
                 "bedrock:InvokeModel"
             ],
             "Resource": [
-                "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-sonnet-*"
+                "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-7-sonnet-*"
             ]
         }
     ]

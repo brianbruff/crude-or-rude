@@ -1,0 +1,44 @@
+name: Validate Conventional Commits
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Conventional Commits
+        uses: wagoid/commitlint-github-action@v5
+        with:
+          configFile: '.commitlintrc.json'
+          
+      - name: Comment PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `⚠️ **Conventional Commits Validation Failed**
+              
+              This PR contains commit messages that don't follow our [Conventional Commits](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/.github/COMMIT_CONVENTIONS.md) format.
+              
+              Please review the commit message format and update your commits accordingly.
+              
+              **Expected format:** \`<type>(<scope>): <subject>\`
+              
+              **Examples:**
+              - \`feat(claude): add new sentiment analysis\`
+              - \`fix(workflow): handle connection timeout\`
+              - \`docs: update README with setup instructions\`
+              
+              See our [Commit Conventions Guide](.github/COMMIT_CONVENTIONS.md) for more details.`
+            })

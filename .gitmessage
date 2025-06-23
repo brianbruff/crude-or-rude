@@ -1,0 +1,36 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+#
+# Type should be one of the following:
+# * feat: A new feature
+# * fix: A bug fix
+# * docs: Documentation only changes
+# * style: Changes that do not affect the meaning of the code
+# * refactor: A code change that neither fixes a bug nor adds a feature
+# * perf: A code change that improves performance
+# * test: Adding missing tests or correcting existing tests
+# * build: Changes that affect the build system or external dependencies
+# * ci: Changes to our CI configuration files and scripts
+# * chore: Other changes that don't modify src or test files
+# * revert: Reverts a previous commit
+#
+# Scope should be noun describing a section of the codebase (optional)
+# Examples: nodes, claude, workflow, sentiment, api, auth
+#
+# Subject should use imperative mood and not end with period
+# No more than 50 characters, capitalize first letter
+#
+# Body should include motivation for the change and contrast with previous behavior
+# Wrap at 72 characters
+#
+# Footer should contain any information about Breaking Changes and reference GitHub issues
+# Breaking Changes should start with BREAKING CHANGE: with a space or two newlines
+#
+# Examples:
+# feat(claude): add cross-region inference profile support
+# fix(workflow): handle AWS Bedrock service unavailability
+# docs: update README with new AWS configuration steps
+# BREAKING CHANGE: remove deprecated sentiment analysis endpoint

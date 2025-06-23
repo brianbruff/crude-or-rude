@@ -15,7 +15,7 @@ from crude_or_rude.models import MarketSentiment, WorkflowState
 class ClaudeDecisionNode:
     """Claude-powered node for making composite sentiment decisions via AWS Bedrock."""
 
-    def __init__(self, region_name: str = None):
+    def __init__(self, region_name: str | None = None):
         """
         Initialize Claude client via AWS Bedrock using existing AWS CLI configuration.
 

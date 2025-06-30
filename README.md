@@ -4,6 +4,68 @@ A witty market sentiment analyzer for crude oil news using LangGraph and AWS Bed
 
 > "Is the market bullish, bearish, or just being a jerk?"
 
+## 🔌 MCP Server Mode (Claude Desktop Integration)
+
+Crude or Rude can run as an MCP (Model Context Protocol) server to integrate with Claude Desktop, allowing you to analyze crude oil headlines directly from Claude Desktop.
+
+### 🚀 Quick Setup for Claude Desktop
+
+1. **Install the application**:
+   ```bash
+   git clone https://github.com/brianbruff/crude-or-rude.git
+   cd crude-or-rude
+   poetry install
+   ```
+
+2. **Configure Claude Desktop** by adding this server to your `claude_desktop_config.json`:
+
+   **On macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   **On Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+   ```json
+   {
+     "mcpServers": {
+       "crude-or-rude": {
+         "command": "poetry",
+         "args": ["run", "crude-or-rude-server"],
+         "cwd": "/path/to/crude-or-rude"
+       }
+     }
+   }
+   ```
+
+3. **Restart Claude Desktop** to load the new MCP server.
+
+4. **Test the integration** by asking Claude to analyze headlines:
+   ```
+   Using the crude-or-rude server, analyze this headline: 
+   "OPEC announces surprise production cuts amid market volatility"
+   ```
+
+### 🛠️ Available MCP Tools
+
+The MCP server provides these tools for Claude Desktop:
+
+- **`analyze_headline`**: Complete headline analysis (sentiment + rudeness + market classification)
+- **`analyze_sentiment`**: Sentiment analysis only  
+- **`detect_rudeness`**: Rudeness/tone detection only
+- **`decide_market_sentiment`**: Market sentiment decision based on provided analysis
+
+### 🔧 Advanced Configuration
+
+You can also run the server manually with different transports:
+
+```bash
+# Default stdio transport (for Claude Desktop)
+poetry run crude-or-rude-server
+
+# Server-Sent Events transport (for web integration)
+poetry run crude-or-rude-server --transport sse
+
+# Streamable HTTP transport
+poetry run crude-or-rude-server --transport streamable-http
+```
+
 ## 🧠 Concept
 
 This application analyzes crude oil news headlines and determines whether the market sentiment is:
@@ -13,9 +75,18 @@ This application analyzes crude oil news headlines and determines whether the ma
 
 ## 🏗️ Architecture
 
-The application uses a LangGraph workflow that orchestrates multiple analysis nodes:
+The application can run in two modes:
 
-1. **Sentiment Analysis Node** - Uses FastMCP for sentiment scoring
+### 🔌 MCP Server Mode (Recommended)
+Runs as an MCP server that integrates with Claude Desktop:
+1. **Sentiment Analysis** - Built-in keyword-based sentiment scoring
+2. **Rudeness Detector** - NLP-based tone analysis (professional/aggressive/passive-aggressive)
+3. **Claude Decision Node** - AWS Bedrock-powered composite sentiment classification using Claude 3.7 Sonnet
+4. **MCP Integration** - Exposes tools for Claude Desktop to analyze headlines
+
+### 🖥️ CLI Mode (Legacy)
+Standalone workflow that orchestrates multiple analysis nodes:
+1. **Sentiment Analysis Node** - Uses FastMCP for sentiment scoring (with fallback)
 2. **Rudeness Detector Node** - Mock NLP node for tone analysis
 3. **Claude Decision Node** - AWS Bedrock-powered composite sentiment classification using Claude 3.7 Sonnet
 

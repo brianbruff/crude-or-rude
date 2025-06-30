@@ -32,6 +32,7 @@ flake8 = "^7.0.0"
 
 [tool.poetry.scripts]
 crude-or-rude = "crude_or_rude.main:main"
+crude-or-rude-server = "crude_or_rude.server_main:main"
 
 [tool.black]
 line-length = 88

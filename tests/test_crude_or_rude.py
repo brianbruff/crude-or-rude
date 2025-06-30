@@ -9,6 +9,7 @@ import pytest
 from crude_or_rude.models import (
     AnalysisResult,
     HeadlineInput,
+    MarketSentiment,
     SentimentAnalysis,
     WorkflowState,
 )
@@ -112,14 +113,18 @@ async def test_workflow_integration():
     """Test basic workflow integration without external dependencies."""
     # Mock the Claude API to avoid requiring actual API key
     with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake_key"}):
-        with patch("crude_or_rude.nodes.claude.ChatAnthropic") as mock_claude:
+        with patch("crude_or_rude.nodes.claude.ChatBedrock") as mock_claude:
             # Mock Claude response
             mock_response = Mock()
             mock_response.content = (
                 '{"category": "Professional", "reasoning": "Test reasoning", '
                 '"response": "Test response"}'
             )
-            mock_claude.return_value.ainvoke.return_value = mock_response
+            mock_claude.return_value.with_structured_output.return_value.ainvoke.return_value = MarketSentiment(
+                category="Professional",
+                reasoning="Test reasoning", 
+                response="Test response"
+            )
 
             workflow = CrudeOrRudeWorkflow()
 

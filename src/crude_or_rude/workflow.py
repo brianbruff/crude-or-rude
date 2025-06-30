@@ -31,7 +31,17 @@ class CrudeOrRudeWorkflow:
             "FASTMCP_URL", "http://localhost:8000"
         )
         self.fastmcp_client = FastMCPClient(self.fastmcp_url)
-        self.claude_node = ClaudeDecisionNode(aws_region)
+        
+        # Initialize Claude node with error handling
+        try:
+            self.claude_node = ClaudeDecisionNode(aws_region)
+            self.claude_available = True
+        except Exception as e:
+            print(f"Warning: Claude/AWS Bedrock not available: {e}")
+            print("Using fallback logic for market sentiment decisions.")
+            self.claude_node = None
+            self.claude_available = False
+            
         self.workflow = self._build_workflow()
 
     def _build_workflow(self) -> StateGraph:
@@ -63,7 +73,11 @@ class CrudeOrRudeWorkflow:
 
     async def _claude_node(self, state: WorkflowState) -> Dict[str, Any]:
         """Wrapper for Claude decision node."""
-        return await self.claude_node.decide_market_sentiment(state)
+        if self.claude_available:
+            return await self.claude_node.decide_market_sentiment(state)
+        else:
+            # Use fallback logic when Claude is not available
+            return await self._fallback_market_sentiment(state)
 
     async def analyze_headline(
         self, headline: str, source: str = None
@@ -105,3 +119,46 @@ class CrudeOrRudeWorkflow:
     async def close(self):
         """Clean up resources."""
         await self.fastmcp_client.close()
+    
+    async def _fallback_market_sentiment(self, state: WorkflowState) -> Dict[str, Any]:
+        """
+        Fallback market sentiment decision when Claude is not available.
+        
+        Args:
+            state: The workflow state with sentiment and rudeness analysis
+            
+        Returns:
+            Market sentiment decision
+        """
+        from crude_or_rude.models import MarketSentiment
+        
+        sentiment_score = state.sentiment.sentiment_score
+        rudeness_score = state.rudeness.rudeness_score
+        tone = state.rudeness.tone
+
+        # Simple rule-based classification
+        if tone == "aggressive" or rudeness_score > 0.7:
+            category = "Panic-stricken"
+            reasoning = f"High rudeness score ({rudeness_score:.2f}) and aggressive tone indicate market panic"
+            response = "This market is having a complete meltdown!"
+        elif tone == "passive-aggressive" or (
+            rudeness_score > 0.4 and abs(sentiment_score) < 0.3
+        ):
+            category = "Passive-aggressive"
+            reasoning = (
+                f"Passive-aggressive tone with mixed signals "
+                f"(sentiment: {sentiment_score:.2f})"
+            )
+            response = "This market is gaslighting you with mixed signals."
+        else:
+            category = "Professional"
+            reasoning = (
+                f"Low rudeness score ({rudeness_score:.2f}) and professional tone"
+            )
+            response = "The market is being surprisingly reasonable today."
+
+        market_sentiment = MarketSentiment(
+            category=category, reasoning=reasoning, response=response
+        )
+
+        return {"market_sentiment": market_sentiment}

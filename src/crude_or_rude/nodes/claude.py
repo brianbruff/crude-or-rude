@@ -92,8 +92,7 @@ class ClaudeDecisionNode:
                 HumanMessage(content=human_prompt),
             ]
 
-            response = await self.llm.ainvoke(messages)
-            market_sentiment = self.parser.parse(response.content)
+            market_sentiment = await self.llm_with_structured_output.ainvoke(messages)
 
             return {"market_sentiment": market_sentiment}
 

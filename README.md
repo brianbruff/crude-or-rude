@@ -66,6 +66,24 @@ poetry run crude-or-rude-server --transport sse
 poetry run crude-or-rude-server --transport streamable-http
 ```
 
+### 📝 Example Usage in Claude Desktop
+
+Once configured, you can interact with the MCP server through Claude Desktop:
+
+```
+Using the crude-or-rude server, analyze this headline: 
+"OPEC announces surprise production cuts amid market volatility"
+```
+
+Claude will use the MCP tools to provide analysis like:
+- **Sentiment**: negative (score: -0.40, confidence: 0.70)
+- **Tone**: passive-aggressive (rudeness: 0.60, confidence: 0.75)
+- **Market Sentiment**: Passive-aggressive - "This market is gaslighting you with mixed signals."
+
+### 🛠️ Development & Testing
+
+For testing and development, see the included `demo.sh` script which shows various usage examples.
+
 ## 🧠 Concept
 
 This application analyzes crude oil news headlines and determines whether the market sentiment is:

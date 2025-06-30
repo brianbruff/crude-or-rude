@@ -103,7 +103,13 @@ def main():
     # Load environment variables
     load_dotenv()
 
-    if len(sys.argv) > 1:
+    # Check for server mode
+    if len(sys.argv) > 1 and sys.argv[1] == "--server":
+        # Run in MCP server mode
+        from crude_or_rude.server import main_async as server_main
+
+        return asyncio.run(server_main())
+    elif len(sys.argv) > 1 and sys.argv[1] not in ["--server"]:
         # Analyze custom headline from command line
         headline = " ".join(sys.argv[1:])
         return asyncio.run(analyze_custom_headline(headline))

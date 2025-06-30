@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "crude-or-rude": {
+      "command": "poetry",
+      "args": ["run", "crude-or-rude-server"],
+      "cwd": "/path/to/your/crude-or-rude/directory"
+    }
+  }
+}

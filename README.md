@@ -13,10 +13,18 @@ This application analyzes crude oil news headlines and determines whether the ma
 
 ## 🏗️ Architecture
 
+The application can run in two modes:
+
+### 1. **MCP Server Mode** (Recommended)
+Acts as a Model Context Protocol (MCP) server that can be integrated with Claude Desktop or other MCP clients. This mode exposes sentiment analysis capabilities as MCP tools.
+
+### 2. **CLI Mode** 
+Traditional command-line interface for direct headline analysis.
+
 The application uses a LangGraph workflow that orchestrates multiple analysis nodes:
 
-1. **Sentiment Analysis Node** - Uses FastMCP for sentiment scoring
-2. **Rudeness Detector Node** - Mock NLP node for tone analysis
+1. **Sentiment Analysis** - Internal crude oil market sentiment analysis
+2. **Rudeness Detection** - Tone analysis for market language 
 3. **Claude Decision Node** - AWS Bedrock-powered composite sentiment classification using Claude 3.7 Sonnet
 
 ## 🚀 Quick Start
@@ -79,6 +87,81 @@ async def analyze():
     finally:
         await workflow.close()
 ```
+
+## 🖥️ MCP Server Mode
+
+### Overview
+The application can run as an MCP (Model Context Protocol) server, allowing integration with Claude Desktop and other MCP clients. This is the recommended way to use crude-or-rude for interactive analysis.
+
+### Starting the Server
+
+#### Using dedicated command:
+```bash
+poetry run crude-or-rude-server
+```
+
+#### Using CLI flag:
+```bash
+poetry run crude-or-rude --server
+```
+
+### Claude Desktop Integration
+
+1. **Locate Claude Desktop configuration file**:
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+2. **Add crude-or-rude server configuration**:
+   ```json
+   {
+     "mcpServers": {
+       "crude-or-rude": {
+         "command": "poetry",
+         "args": ["run", "crude-or-rude-server"],
+         "cwd": "/path/to/your/crude-or-rude/directory"
+       }
+     }
+   }
+   ```
+
+3. **Restart Claude Desktop**
+
+### Available MCP Tools
+
+The server exposes three main tools:
+
+#### `analyze_headline`
+Complete analysis of crude oil news headlines
+- **Input**: `headline` (required), `source` (optional)
+- **Output**: Full sentiment analysis with market categorization
+
+#### `analyze_sentiment`  
+Sentiment analysis only
+- **Input**: `text` (required)
+- **Output**: Sentiment score, label, and confidence
+
+#### `detect_rudeness`
+Tone and rudeness detection
+- **Input**: `text` (required)  
+- **Output**: Tone classification and rudeness score
+
+### Testing MCP Integration
+
+Once configured in Claude Desktop, you can test with prompts like:
+
+```
+"Can you analyze this oil headline using crude-or-rude: 'OPEC cuts production amid market volatility'"
+
+"Use the crude-or-rude sentiment analyzer to check: 'Oil prices crash to yearly lows'"
+
+"What does crude-or-rude say about the tone of: 'Energy markets show concerning weakness'"
+```
+
+The tools will provide comprehensive analysis including:
+- Sentiment scores and labels
+- Tone analysis (professional/aggressive/passive-aggressive)
+- Market sentiment classification
+- Witty market commentary
 
 ## ☁️ GitHub Codespaces
 
@@ -164,18 +247,17 @@ Claude 3.7 Sonnet is available in these AWS regions:
 - `ap-southeast-1` (Singapore)
 - `ap-northeast-1` (Tokyo)
 
-### � Environment Variables
+### 🌍 Environment Variables
 
 | Variable | Required | Description | Default |
 |----------|----------|-------------|---------|
 | `AWS_ACCESS_KEY_ID` | ❌ Optional* | AWS access key (if not using CLI/IAM) | From AWS CLI |
 | `AWS_SECRET_ACCESS_KEY` | ❌ Optional* | AWS secret key (if not using CLI/IAM) | From AWS CLI |
 | `AWS_DEFAULT_REGION` | ❌ Optional | AWS region for Bedrock | From AWS CLI |
-| `FASTMCP_URL` | ❌ Optional | FastMCP service URL for sentiment analysis | `http://localhost:8000` |
 
 *Not required if using AWS CLI, IAM roles, or SSO
 
-Note: The application includes fallback mechanisms and will work with mock data if external services are unavailable.
+Note: The application uses internal sentiment analysis and will work without external dependencies.
 
 ## 📊 Example Output
 
@@ -248,8 +330,10 @@ The application can be configured via environment variables or AWS CLI:
 - **Authentication**: Uses your AWS CLI configuration automatically
 - **Region**: Configurable via `AWS_DEFAULT_REGION` or AWS CLI
 
-### Other Services
-- `FASTMCP_URL` - URL for FastMCP service (defaults to http://localhost:8000)
+### Internal Services
+- **Sentiment Analysis**: Built-in crude oil market sentiment analysis
+- **Tone Detection**: Internal rudeness/tone classification
+- **MCP Server**: Model Context Protocol server for external integration
 
 ## 🧪 Testing
 
@@ -260,9 +344,10 @@ poetry run python test_bedrock.py
 ```
 
 ### Full Test Suite
-The application includes mock implementations that work without external dependencies:
-- Mock sentiment analysis when FastMCP is unavailable
+The application uses internal services and includes comprehensive testing:
+- Internal sentiment analysis with crude oil market keywords
 - Fallback decision logic when Claude API is unavailable
+- MCP server functionality tests
 
 ```bash
 poetry run pytest

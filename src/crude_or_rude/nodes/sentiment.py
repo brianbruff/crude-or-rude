@@ -1,39 +1,30 @@
 """
-Sentiment analysis node using FastMCP.
+Sentiment analysis node using internal sentiment analysis service.
 """
 
 from typing import Any, Dict
 
 from crude_or_rude.models import WorkflowState
-from crude_or_rude.services import FastMCPClient
+from crude_or_rude.services import SentimentAnalysisService
 
 
 async def sentiment_analysis_node(
-    state: WorkflowState, fastmcp_client: FastMCPClient
+    state: WorkflowState, sentiment_service: SentimentAnalysisService
 ) -> Dict[str, Any]:
     """
-    Analyze sentiment of the headline using FastMCP.
+    Analyze sentiment of the headline using internal sentiment analysis.
 
     Args:
         state: The current workflow state
-        fastmcp_client: FastMCP client for sentiment analysis
+        sentiment_service: Internal sentiment analysis service
 
     Returns:
-        Updated state with sentiment analysis or fallback mock data
+        Updated state with sentiment analysis
     """
     try:
-        sentiment_analysis = await fastmcp_client.analyze_sentiment(state.headline)
+        sentiment_analysis = await sentiment_service.analyze_sentiment(state.headline)
         return {"sentiment": sentiment_analysis}
 
     except Exception as e:
-        # Fallback to mock sentiment analysis as per project patterns
-        mock_sentiment = {
-            "score": 0.1,
-            "label": "neutral", 
-            "confidence": 0.8,
-            "source": "mock_fallback"
-        }
-        return {
-            "sentiment": mock_sentiment,
-            "sentiment_warning": f"Using mock data due to FastMCP failure: {str(e)}"
-        }
+        # This should rarely fail since it's internal logic
+        return {"error": f"Sentiment analysis failed: {str(e)}"}

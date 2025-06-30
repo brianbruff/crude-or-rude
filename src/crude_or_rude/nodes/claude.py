@@ -8,9 +8,9 @@ from typing import Any, Dict
 from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
 
 from crude_or_rude.models import MarketSentiment, WorkflowState
-from pydantic import BaseModel
 
 
 class ClaudeDecisionNode:
@@ -25,7 +25,7 @@ class ClaudeDecisionNode:
         """
         # Use the region from environment or AWS CLI default
         region = region_name or os.getenv("AWS_DEFAULT_REGION")
-        
+
         # ChatBedrock will automatically use your AWS CLI configuration
         self.llm = ChatBedrock(
             model_id="us.anthropic.claude-3-7-sonnet-20250219-v1:0",  # Claude 3.7 Sonnet cross-region inference profile
@@ -33,10 +33,12 @@ class ClaudeDecisionNode:
             model_kwargs={
                 "temperature": 0.7,
                 "max_tokens": 4000,
-            }
+            },
         )
         # Instead of PydanticOutputParser, bind the schema directly
-        self.llm_with_structured_output = self.llm.with_structured_output(MarketSentiment)
+        self.llm_with_structured_output = self.llm.with_structured_output(
+            MarketSentiment
+        )
 
     async def decide_market_sentiment(self, state: WorkflowState) -> Dict[str, Any]:
         """
@@ -92,8 +94,8 @@ class ClaudeDecisionNode:
                 HumanMessage(content=human_prompt),
             ]
 
-            response = await self.llm.ainvoke(messages)
-            market_sentiment = self.parser.parse(response.content)
+            # Use structured output instead of parsing
+            market_sentiment = await self.llm_with_structured_output.ainvoke(messages)
 
             return {"market_sentiment": market_sentiment}
 

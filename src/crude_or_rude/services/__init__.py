@@ -1,22 +1,20 @@
 """
-FastMCP service client for sentiment analysis.
+Internal sentiment analysis service for the Crude or Rude application.
 """
-
-import httpx
 
 from crude_or_rude.models import SentimentAnalysis
 
 
-class FastMCPClient:
-    """Client for FastMCP sentiment analysis service."""
+class SentimentAnalysisService:
+    """Internal sentiment analysis service."""
 
-    def __init__(self, base_url: str = "http://localhost:8000"):
-        self.base_url = base_url.rstrip("/")
-        self.client = httpx.AsyncClient()
+    def __init__(self):
+        """Initialize the service."""
+        pass
 
     async def analyze_sentiment(self, text: str) -> SentimentAnalysis:
         """
-        Analyze sentiment of text using FastMCP.
+        Analyze sentiment of text using internal logic.
 
         Args:
             text: The text to analyze
@@ -24,81 +22,105 @@ class FastMCPClient:
         Returns:
             SentimentAnalysis object with results
         """
-        try:
-            response = await self.client.post(
-                f"{self.base_url}/analyze/sentiment", json={"text": text}
-            )
-            response.raise_for_status()
-            data = response.json()
+        return await self._sentiment_analysis(text)
 
-            return SentimentAnalysis(
-                sentiment_score=data.get("sentiment_score", 0.0),
-                sentiment_label=data.get("sentiment_label", "neutral"),
-                confidence=data.get("confidence", 0.5),
-            )
-        except Exception:
-            # Fallback to mock sentiment analysis if FastMCP is not available
-            return await self._mock_sentiment_analysis(text)
-
-    async def _mock_sentiment_analysis(self, text: str) -> SentimentAnalysis:
+    async def _sentiment_analysis(self, text: str) -> SentimentAnalysis:
         """
-        Mock sentiment analysis for when FastMCP is not available.
+        Internal sentiment analysis based on keyword matching.
 
-        This provides basic sentiment analysis based on keyword matching.
+        This provides basic sentiment analysis based on crude oil market keywords.
         """
         text_lower = text.lower()
 
-        # Simple keyword-based sentiment analysis
+        # Crude oil market specific keywords
         positive_keywords = [
             "surge",
             "bull",
+            "bullish",
             "rise",
+            "rising",
             "gain",
+            "gains",
             "up",
+            "upward",
             "increase",
+            "increased",
             "boost",
+            "boosted",
             "optimistic",
             "strong",
+            "stronger",
             "rally",
+            "rallied",
             "breakthrough",
+            "recovery",
+            "demand",
+            "growth",
+            "stable",
+            "stability",
+            "support",
+            "supported",
         ]
         negative_keywords = [
             "crash",
+            "crashed",
             "bear",
+            "bearish",
             "fall",
+            "falling",
+            "fell",
             "drop",
+            "dropped",
+            "dropping",
             "down",
+            "downward",
             "decline",
+            "declined",
+            "declining",
             "plunge",
+            "plunged",
             "crisis",
             "panic",
+            "panicked",
             "weak",
+            "weaker",
+            "weakness",
             "collapse",
+            "collapsed",
             "disaster",
             "cut",
+            "cuts",
+            "cutting",
+            "recession",
+            "fears",
+            "concerns",
+            "pressure",
+            "oversupply",
+            "glut",
         ]
 
         positive_count = sum(1 for word in positive_keywords if word in text_lower)
         negative_count = sum(1 for word in negative_keywords if word in text_lower)
 
+        # Calculate sentiment score with enhanced weighting
         if positive_count > negative_count:
-            sentiment_score = min(0.8, 0.3 + (positive_count * 0.1))
+            base_score = 0.3 + (positive_count * 0.15)
+            sentiment_score = min(0.9, base_score)
             sentiment_label = "positive"
         elif negative_count > positive_count:
-            sentiment_score = max(-0.8, -0.3 - (negative_count * 0.1))
+            base_score = -0.3 - (negative_count * 0.15)
+            sentiment_score = max(-0.9, base_score)
             sentiment_label = "negative"
         else:
             sentiment_score = 0.0
             sentiment_label = "neutral"
 
-        confidence = min(0.9, 0.5 + abs(sentiment_score) * 0.5)
+        # Calculate confidence based on keyword matches and text length
+        match_strength = (positive_count + negative_count) / max(len(text.split()), 1)
+        confidence = min(0.95, 0.6 + match_strength * 0.3)
 
         return SentimentAnalysis(
             sentiment_score=sentiment_score,
             sentiment_label=sentiment_label,
             confidence=confidence,
         )
-
-    async def close(self):
-        """Close the HTTP client."""
-        await self.client.aclose()

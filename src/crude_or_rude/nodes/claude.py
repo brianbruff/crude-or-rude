@@ -92,10 +92,9 @@ class ClaudeDecisionNode:
                 HumanMessage(content=human_prompt),
             ]
 
-            response = await self.llm.ainvoke(messages)
-            market_sentiment = self.parser.parse(response.content)
+            response = await self.llm_with_structured_output.ainvoke(messages)
 
-            return {"market_sentiment": market_sentiment}
+            return {"market_sentiment": response}
 
         except Exception:
             # Fallback logic if Claude API fails

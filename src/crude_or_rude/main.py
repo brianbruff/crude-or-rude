@@ -103,7 +103,32 @@ def main():
     # Load environment variables
     load_dotenv()
 
-    if len(sys.argv) > 1:
+    # Check for server mode
+    if len(sys.argv) > 1 and sys.argv[1] == "--server":
+        # Run MCP server mode
+        print("🛢️ Starting Crude or Rude MCP Server...")
+        try:
+            from crude_or_rude.mcp_server import run_mcp_server
+            return asyncio.run(run_mcp_server())
+        except ImportError as e:
+            print(f"❌ MCP server not available: {e}")
+            print("💡 Install MCP dependencies: pip install mcp")
+            return 1
+    elif len(sys.argv) > 1 and sys.argv[1] in ["--help", "-h"]:
+        # Show help
+        print("🛢️ Crude or Rude? Market Sentiment Analyzer")
+        print()
+        print("Usage:")
+        print("  crude-or-rude                    # Run sample analysis (CLI mode)")
+        print("  crude-or-rude <headline>         # Analyze custom headline (CLI mode)")
+        print("  crude-or-rude --server          # Run as MCP server for Claude Desktop")
+        print("  crude-or-rude --help            # Show this help")
+        print()
+        print("Examples:")
+        print('  crude-or-rude "Oil prices surge amid supply concerns"')
+        print("  crude-or-rude --server")
+        return 0
+    elif len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
         # Analyze custom headline from command line
         headline = " ".join(sys.argv[1:])
         return asyncio.run(analyze_custom_headline(headline))

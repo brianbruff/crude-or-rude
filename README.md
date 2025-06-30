@@ -4,6 +4,25 @@ A witty market sentiment analyzer for crude oil news using LangGraph and AWS Bed
 
 > "Is the market bullish, bearish, or just being a jerk?"
 
+## 🚀 New: MCP Server Mode
+
+**Crude or Rude now works as an MCP server for Claude Desktop!** 
+
+You can analyze crude oil headlines directly in Claude Desktop conversations. See the [MCP Setup Guide](MCP_SETUP.md) for configuration instructions.
+
+### Quick MCP Setup:
+```bash
+# Install with MCP support
+poetry install
+pip install mcp
+
+# Run as MCP server
+crude-or-rude --server
+
+# Configure in Claude Desktop, then use in conversations:
+# "Analyze this oil headline: 'OPEC cuts production again'"
+```
+
 ## 🧠 Concept
 
 This application analyzes crude oil news headlines and determines whether the market sentiment is:
@@ -54,17 +73,38 @@ aws bedrock list-foundation-models --region us-east-1
 
 ### Usage
 
-#### Run with sample headlines:
+The application supports both CLI mode and MCP server mode for Claude Desktop integration.
+
+#### CLI Mode
+
+**Run with sample headlines:**
 ```bash
 poetry run crude-or-rude
 ```
 
-#### Analyze a custom headline:
+**Analyze a custom headline:**
 ```bash
 poetry run crude-or-rude "OPEC cuts production again despite surplus"
 ```
 
-#### Programmatic usage:
+**Show help:**
+```bash
+poetry run crude-or-rude --help
+```
+
+#### MCP Server Mode
+
+**Run as MCP server for Claude Desktop:**
+```bash
+poetry run crude-or-rude --server
+# Or using the dedicated server command:
+poetry run crude-or-rude-server
+```
+
+See the [MCP Setup Guide](MCP_SETUP.md) for complete Claude Desktop integration instructions.
+
+#### Programmatic Usage
+
 ```python
 from crude_or_rude.workflow import CrudeOrRudeWorkflow
 

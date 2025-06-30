@@ -110,16 +110,20 @@ class TestRudenessDetector:
 @pytest.mark.asyncio
 async def test_workflow_integration():
     """Test basic workflow integration without external dependencies."""
-    # Mock the Claude API to avoid requiring actual API key
-    with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake_key"}):
-        with patch("crude_or_rude.nodes.claude.ChatAnthropic") as mock_claude:
-            # Mock Claude response
+    # Set up AWS environment variables to avoid credential errors
+    with patch.dict("os.environ", {
+        "AWS_DEFAULT_REGION": "us-east-1",
+        "AWS_ACCESS_KEY_ID": "fake_key",
+        "AWS_SECRET_ACCESS_KEY": "fake_secret"
+    }):
+        with patch("crude_or_rude.nodes.claude.ChatBedrock") as mock_bedrock:
+            # Mock Bedrock response with structured output
             mock_response = Mock()
-            mock_response.content = (
-                '{"category": "Professional", "reasoning": "Test reasoning", '
-                '"response": "Test response"}'
-            )
-            mock_claude.return_value.ainvoke.return_value = mock_response
+            mock_response.category = "Professional"
+            mock_response.reasoning = "Test reasoning"
+            mock_response.response = "Test response"
+            
+            mock_bedrock.return_value.with_structured_output.return_value.ainvoke.return_value = mock_response
 
             workflow = CrudeOrRudeWorkflow()
 

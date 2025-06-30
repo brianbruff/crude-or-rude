@@ -19,6 +19,14 @@ The application uses a LangGraph workflow that orchestrates multiple analysis no
 2. **Rudeness Detector Node** - Mock NLP node for tone analysis
 3. **Claude Decision Node** - AWS Bedrock-powered composite sentiment classification using Claude 3.7 Sonnet
 
+### 🔌 MCP Server Integration
+
+When run in server mode, the application exposes three MCP tools for Claude Desktop:
+
+- **`analyze_crude_headline`** - Analyze a single crude oil headline with full sentiment analysis
+- **`get_sample_headlines`** - Retrieve sample headlines for testing and demonstration
+- **`analyze_multiple_headlines`** - Batch analysis of multiple headlines
+
 ## 🚀 Quick Start
 
 ### Prerequisites 
@@ -47,24 +55,70 @@ aws configure
 # Or use AWS SSO, IAM roles, or other AWS authentication methods
 ```
 
-4. Verify AWS Bedrock access:
-```bash
-aws bedrock list-foundation-models --region us-east-1
-```
+### Usage Modes
 
-### Usage
+#### 1. 📱 Command Line Interface (CLI)
 
-#### Run with sample headlines:
+**Analyze sample headlines:**
 ```bash
 poetry run crude-or-rude
 ```
 
-#### Analyze a custom headline:
+**Analyze a custom headline:**
 ```bash
-poetry run crude-or-rude "OPEC cuts production again despite surplus"
+poetry run crude-or-rude "Oil prices surge dramatically amid supply concerns"
 ```
 
-#### Programmatic usage:
+#### 2. 🤖 MCP Server Mode (for Claude Desktop)
+
+**Start as MCP server:**
+```bash
+poetry run crude-or-rude --server
+```
+
+Then connect from Claude Desktop. See [Claude Desktop Setup Guide](CLAUDE_DESKTOP_SETUP.md) for detailed configuration instructions.
+
+#### 3. 🧪 Testing AWS Bedrock Connection
+```bash
+# Test AWS Bedrock connectivity
+poetry run python test_bedrock.py
+```
+
+## 📊 Example Output
+
+### CLI Mode
+```
+🛢️ Crude or Rude? Market Sentiment Analyzer
+==================================================
+
+📰 Sample 1: OPEC cuts production again despite global surplus concerns
+--------------------------------------------------
+💭 Sentiment: negative (score: -0.40, confidence: 0.75)
+🗣️  Tone: passive-aggressive (rudeness: 0.60, confidence: 0.85)
+🎯 Market Sentiment: Passive-aggressive
+💡 Reasoning: Mixed signals with passive-aggressive tone suggesting market manipulation
+🤡 Market Says: "This market is gaslighting you with mixed signals about oversupply"
+```
+
+### MCP Server Mode (with Claude Desktop)
+
+When connected to Claude Desktop, you can interact naturally:
+
+**User**: "Can you analyze this crude oil headline: 'Oil prices surge dramatically'"
+
+**Claude** (using MCP tools): "I'll analyze that headline for you using the crude oil sentiment analyzer.
+
+*[Calls analyze_crude_headline tool]*
+
+Based on the analysis:
+- **Sentiment**: Positive (score: 0.65, confidence: 0.80)
+- **Tone**: Professional (rudeness: 0.10, confidence: 0.90) 
+- **Market Classification**: Professional
+- **Market Commentary**: 'This market is showing some genuine optimism for once!'
+
+The analysis suggests this is straightforward positive market news without manipulation or panic."
+
+### Programmatic Usage
 ```python
 from crude_or_rude.workflow import CrudeOrRudeWorkflow
 

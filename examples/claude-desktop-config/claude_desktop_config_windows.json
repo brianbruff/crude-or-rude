@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "crude-or-rude": {
+      "command": "poetry.exe",
+      "args": ["run", "crude-or-rude", "--server"],
+      "cwd": "C:\\path\\to\\your\\crude-or-rude",
+      "env": {
+        "PATH": "C:\\Python311;C:\\Python311\\Scripts;%PATH%",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    }
+  }
+}

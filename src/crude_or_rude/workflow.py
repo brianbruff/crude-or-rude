@@ -13,24 +13,20 @@ from crude_or_rude.nodes import (
     rudeness_detector_node,
     sentiment_analysis_node,
 )
-from crude_or_rude.services import FastMCPClient
+from crude_or_rude.services import SentimentAnalysisService
 
 
 class CrudeOrRudeWorkflow:
     """Main workflow orchestrator using LangGraph."""
 
-    def __init__(self, fastmcp_url: str = None, aws_region: str = None):
+    def __init__(self, aws_region: str = None):
         """
         Initialize the workflow.
 
         Args:
-            fastmcp_url: URL for FastMCP service
             aws_region: AWS region for Bedrock service (optional, uses CLI default)
         """
-        self.fastmcp_url = fastmcp_url or os.getenv(
-            "FASTMCP_URL", "http://localhost:8000"
-        )
-        self.fastmcp_client = FastMCPClient(self.fastmcp_url)
+        self.sentiment_client = SentimentAnalysisService()
         self.claude_node = ClaudeDecisionNode(aws_region)
         self.workflow = self._build_workflow()
 
@@ -55,7 +51,7 @@ class CrudeOrRudeWorkflow:
 
     async def _sentiment_node(self, state: WorkflowState) -> Dict[str, Any]:
         """Wrapper for sentiment analysis node."""
-        return await sentiment_analysis_node(state, self.fastmcp_client)
+        return await sentiment_analysis_node(state, self.sentiment_client)
 
     async def _rudeness_node(self, state: WorkflowState) -> Dict[str, Any]:
         """Wrapper for rudeness detector node."""
@@ -104,4 +100,5 @@ class CrudeOrRudeWorkflow:
 
     async def close(self):
         """Clean up resources."""
-        await self.fastmcp_client.close()
+        # No cleanup needed for internal services
+        pass

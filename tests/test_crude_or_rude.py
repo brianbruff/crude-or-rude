@@ -13,7 +13,7 @@ from crude_or_rude.models import (
     WorkflowState,
 )
 from crude_or_rude.nodes.rudeness import rudeness_detector_node
-from crude_or_rude.services import FastMCPClient
+from crude_or_rude.services import SentimentAnalysisService
 from crude_or_rude.workflow import CrudeOrRudeWorkflow
 
 
@@ -43,34 +43,32 @@ class TestModels:
         assert state.rudeness is None
 
 
-class TestFastMCPClient:
-    """Test FastMCP client."""
+class TestSentimentAnalysisService:
+    """Test internal sentiment analysis service."""
 
     @pytest.mark.asyncio
-    async def test_mock_sentiment_analysis(self):
-        """Test mock sentiment analysis."""
-        client = FastMCPClient()
+    async def test_sentiment_analysis(self):
+        """Test internal sentiment analysis."""
+        service = SentimentAnalysisService()
 
         # Test positive sentiment
-        result = await client._mock_sentiment_analysis(
-            "Oil prices surge and rally strongly"
+        result = await service.analyze_sentiment(
+            "Oil prices surge and rally strongly with bullish demand"
         )
         assert result.sentiment_label == "positive"
         assert result.sentiment_score > 0
 
         # Test negative sentiment
-        result = await client._mock_sentiment_analysis(
-            "Oil market crashes and collapses"
+        result = await service.analyze_sentiment(
+            "Oil market crashes and collapses with bearish panic"
         )
         assert result.sentiment_label == "negative"
         assert result.sentiment_score < 0
 
         # Test neutral sentiment
-        result = await client._mock_sentiment_analysis("Oil report released today")
+        result = await service.analyze_sentiment("Oil report released today")
         assert result.sentiment_label == "neutral"
         assert result.sentiment_score == 0.0
-
-        await client.close()
 
 
 class TestRudenessDetector:
@@ -112,14 +110,14 @@ async def test_workflow_integration():
     """Test basic workflow integration without external dependencies."""
     # Mock the Claude API to avoid requiring actual API key
     with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake_key"}):
-        with patch("crude_or_rude.nodes.claude.ChatAnthropic") as mock_claude:
-            # Mock Claude response
-            mock_response = Mock()
-            mock_response.content = (
-                '{"category": "Professional", "reasoning": "Test reasoning", '
-                '"response": "Test response"}'
-            )
-            mock_claude.return_value.ainvoke.return_value = mock_response
+        with patch("crude_or_rude.nodes.claude.ChatBedrock") as mock_bedrock:
+            # Mock Bedrock response
+            mock_response = {
+                "category": "Professional", 
+                "reasoning": "Test reasoning", 
+                "response": "Test response"
+            }
+            mock_bedrock.return_value.with_structured_output.return_value.ainvoke.return_value = mock_response
 
             workflow = CrudeOrRudeWorkflow()
 

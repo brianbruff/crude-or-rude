@@ -113,11 +113,13 @@ async def test_workflow_integration():
         with patch("crude_or_rude.nodes.claude.ChatBedrock") as mock_bedrock:
             # Mock Bedrock response
             mock_response = {
-                "category": "Professional", 
-                "reasoning": "Test reasoning", 
-                "response": "Test response"
+                "category": "Professional",
+                "reasoning": "Test reasoning",
+                "response": "Test response",
             }
-            mock_bedrock.return_value.with_structured_output.return_value.ainvoke.return_value = mock_response
+            mock_bedrock.return_value.with_structured_output.return_value.ainvoke.return_value = (
+                mock_response
+            )
 
             workflow = CrudeOrRudeWorkflow()
 

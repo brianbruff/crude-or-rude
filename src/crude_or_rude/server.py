@@ -12,36 +12,31 @@ from typing import Any, Dict, List, Optional, Sequence
 from dotenv import load_dotenv
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import (
-    CallToolRequest,
-    Tool,
-    TextContent,
-    ListToolsResult,
-)
+from mcp.types import CallToolRequest, ListToolsResult, TextContent, Tool
 
 from crude_or_rude.models import (
-    AnalysisResult, 
-    HeadlineInput, 
-    SentimentAnalysis,
-    RudenessAnalysis,
+    AnalysisResult,
+    HeadlineInput,
     MarketSentiment,
+    RudenessAnalysis,
+    SentimentAnalysis,
 )
 from crude_or_rude.workflow import CrudeOrRudeWorkflow
 
 
 class CrudeOrRudeMCPServer:
     """MCP Server for crude oil market sentiment analysis."""
-    
+
     def __init__(self):
         """Initialize the MCP server."""
         load_dotenv()
         self.server = Server("crude-or-rude")
         self.workflow = None
         self._setup_tools()
-    
+
     def _setup_tools(self):
         """Set up the MCP tools."""
-        
+
         @self.server.list_tools()
         async def list_tools() -> ListToolsResult:
             """List available tools."""
@@ -55,15 +50,15 @@ class CrudeOrRudeMCPServer:
                             "properties": {
                                 "headline": {
                                     "type": "string",
-                                    "description": "The crude oil news headline to analyze"
+                                    "description": "The crude oil news headline to analyze",
                                 },
                                 "source": {
-                                    "type": "string", 
-                                    "description": "Optional news source (default: unknown)"
-                                }
+                                    "type": "string",
+                                    "description": "Optional news source (default: unknown)",
+                                },
                             },
-                            "required": ["headline"]
-                        }
+                            "required": ["headline"],
+                        },
                     ),
                     Tool(
                         name="analyze_sentiment",
@@ -73,11 +68,11 @@ class CrudeOrRudeMCPServer:
                             "properties": {
                                 "text": {
                                     "type": "string",
-                                    "description": "The text to analyze for sentiment"
+                                    "description": "The text to analyze for sentiment",
                                 }
                             },
-                            "required": ["text"]
-                        }
+                            "required": ["text"],
+                        },
                     ),
                     Tool(
                         name="detect_rudeness",
@@ -87,17 +82,19 @@ class CrudeOrRudeMCPServer:
                             "properties": {
                                 "text": {
                                     "type": "string",
-                                    "description": "The text to analyze for rudeness"
+                                    "description": "The text to analyze for rudeness",
                                 }
                             },
-                            "required": ["text"]
-                        }
-                    )
+                            "required": ["text"],
+                        },
+                    ),
                 ]
             )
-        
+
         @self.server.call_tool()
-        async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextContent]:
+        async def call_tool(
+            name: str, arguments: Dict[str, Any]
+        ) -> Sequence[TextContent]:
             """Handle tool calls."""
             if name == "analyze_headline":
                 return await self._analyze_headline(arguments)
@@ -107,22 +104,24 @@ class CrudeOrRudeMCPServer:
                 return await self._detect_rudeness(arguments)
             else:
                 raise ValueError(f"Unknown tool: {name}")
-    
-    async def _analyze_headline(self, arguments: Dict[str, Any]) -> Sequence[TextContent]:
+
+    async def _analyze_headline(
+        self, arguments: Dict[str, Any]
+    ) -> Sequence[TextContent]:
         """Analyze a headline for complete market sentiment."""
         headline = arguments.get("headline")
         source = arguments.get("source")
-        
+
         if not headline:
             raise ValueError("headline is required")
-        
+
         # Initialize workflow if not already done
         if not self.workflow:
             self.workflow = CrudeOrRudeWorkflow()
-        
+
         try:
             result = await self.workflow.analyze_headline(headline, source)
-            
+
             # Format the result as a comprehensive analysis
             analysis_text = f"""# Crude Oil Market Sentiment Analysis
 
@@ -150,28 +149,30 @@ The market sentiment for this headline is classified as **{result.market_sentime
 - Tone analysis showing {result.rudeness.tone} characteristics
 - Overall market behavior: {result.market_sentiment.response}
 """
-            
+
             return [TextContent(type="text", text=analysis_text)]
-            
+
         except Exception as e:
             error_text = f"Error analyzing headline: {str(e)}"
             return [TextContent(type="text", text=error_text)]
-    
-    async def _analyze_sentiment(self, arguments: Dict[str, Any]) -> Sequence[TextContent]:
+
+    async def _analyze_sentiment(
+        self, arguments: Dict[str, Any]
+    ) -> Sequence[TextContent]:
         """Analyze text for sentiment only."""
         text = arguments.get("text")
-        
+
         if not text:
             raise ValueError("text is required")
-        
+
         # Initialize workflow if not already done
         if not self.workflow:
             self.workflow = CrudeOrRudeWorkflow()
-        
+
         try:
             # Use the internal sentiment analysis
             sentiment = await self.workflow.sentiment_client.analyze_sentiment(text)
-            
+
             result_text = f"""# Sentiment Analysis
 
 ## 📊 Results
@@ -187,33 +188,35 @@ Score interpretation:
 
 Confidence level: {sentiment.confidence:.1%}
 """
-            
+
             return [TextContent(type="text", text=result_text)]
-            
+
         except Exception as e:
             error_text = f"Error analyzing sentiment: {str(e)}"
             return [TextContent(type="text", text=error_text)]
-    
-    async def _detect_rudeness(self, arguments: Dict[str, Any]) -> Sequence[TextContent]:
+
+    async def _detect_rudeness(
+        self, arguments: Dict[str, Any]
+    ) -> Sequence[TextContent]:
         """Detect rudeness/aggressiveness in text."""
         text = arguments.get("text")
-        
+
         if not text:
             raise ValueError("text is required")
-        
+
         try:
             # Import here to avoid circular imports
-            from crude_or_rude.nodes.rudeness import rudeness_detector_node
             from crude_or_rude.models import WorkflowState
-            
+            from crude_or_rude.nodes.rudeness import rudeness_detector_node
+
             # Create a workflow state for rudeness detection
             state = WorkflowState(headline=text)
             result = await rudeness_detector_node(state)
             rudeness = result.get("rudeness")
-            
+
             if not rudeness:
                 raise ValueError("Rudeness detection failed")
-            
+
             result_text = f"""# Rudeness/Tone Analysis
 
 ## 🗣️ Results
@@ -231,21 +234,20 @@ Current tone: **{rudeness.tone}**
 Rudeness level: {rudeness.rudeness_score:.1%}
 Confidence: {rudeness.confidence:.1%}
 """
-            
+
             return [TextContent(type="text", text=result_text)]
-            
+
         except Exception as e:
             error_text = f"Error detecting rudeness: {str(e)}"
             return [TextContent(type="text", text=error_text)]
-    
+
     async def run(self):
         """Run the MCP server."""
         async with stdio_server() as streams:
             await self.server.run(
-                streams[0], streams[1], 
-                self.server.create_initialization_options()
+                streams[0], streams[1], self.server.create_initialization_options()
             )
-    
+
     async def cleanup(self):
         """Clean up resources."""
         if self.workflow:

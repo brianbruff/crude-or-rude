@@ -2,6 +2,7 @@
 Main entry point for the Crude or Rude application.
 """
 
+import argparse
 import asyncio
 import sys
 
@@ -98,14 +99,67 @@ async def analyze_custom_headline(headline: str):
     return 0
 
 
+async def run_mcp_server():
+    """Run the application in MCP server mode."""
+    from crude_or_rude.mcp_server import create_mcp_server
+    
+    # Create the MCP server
+    server = create_mcp_server()
+    
+    print("🛢️ Crude or Rude MCP Server starting...")
+    print("Listening for MCP connections via stdio...")
+    
+    try:
+        # Run the server via stdio (standard communication for MCP servers)
+        await server.run_stdio_async()
+    except KeyboardInterrupt:
+        print("\n🛑 Server stopped by user")
+    except Exception as e:
+        print(f"❌ Server error: {e}")
+        return 1
+    finally:
+        # Clean up resources
+        from crude_or_rude.mcp_server import cleanup_workflow
+        await cleanup_workflow()
+    
+    return 0
+
+
 def main():
     """Main CLI entry point."""
     # Load environment variables
     load_dotenv()
 
-    if len(sys.argv) > 1:
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description="Crude or Rude: Market Sentiment Analyzer",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  crude-or-rude                                    # Run sample analysis
+  crude-or-rude "Oil prices surge dramatically"   # Analyze custom headline
+  crude-or-rude --server                          # Run as MCP server
+        """,
+    )
+    parser.add_argument(
+        "--server", 
+        action="store_true", 
+        help="Run as MCP server for Claude Desktop integration"
+    )
+    parser.add_argument(
+        "headline", 
+        nargs="*", 
+        help="Custom headline to analyze (if not provided, runs sample analysis)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.server:
+        # Run in MCP server mode
+        return asyncio.run(run_mcp_server())
+    elif args.headline:
         # Analyze custom headline from command line
-        headline = " ".join(sys.argv[1:])
+        headline = " ".join(args.headline)
         return asyncio.run(analyze_custom_headline(headline))
     else:
         # Run sample analysis

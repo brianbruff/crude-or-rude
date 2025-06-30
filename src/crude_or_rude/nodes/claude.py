@@ -10,6 +10,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import PydanticOutputParser
 
 from crude_or_rude.models import MarketSentiment, WorkflowState
+from pydantic import BaseModel
 
 
 class ClaudeDecisionNode:
@@ -34,7 +35,8 @@ class ClaudeDecisionNode:
                 "max_tokens": 4000,
             }
         )
-        self.parser = PydanticOutputParser(pydantic_object=MarketSentiment)
+        # Instead of PydanticOutputParser, bind the schema directly
+        self.llm_with_structured_output = self.llm.with_structured_output(MarketSentiment)
 
     async def decide_market_sentiment(self, state: WorkflowState) -> Dict[str, Any]:
         """
@@ -82,8 +84,6 @@ class ClaudeDecisionNode:
           (range: 0.0 to 1.0)
         - Tone: {state.rudeness.tone}
         - Confidence: {state.rudeness.confidence}
-
-        {self.parser.get_format_instructions()}
         """
 
         try:
